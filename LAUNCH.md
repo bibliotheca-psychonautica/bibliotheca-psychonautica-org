@@ -1,5 +1,7 @@
 # Moving to bibliotheca-psychonautica.org
 
+> **Status (2026-10-17):** done. The site is served from `bibliotheca-psychonautica/bibliotheca-psychonautica-org` at **bibliotheca-psychonautica.org**; the old 2012 site (repo `lennertvdk/bibliotheca-psychonautica-classic`) is offline. DNS is in Tom's Porkbun account. The steps below are kept for reference.
+
 The site currently runs on **bibliotheca.psychedelicscience.eu**. Everything
 that needs an absolute URL — hreflang, Open Graph, the sitemap — points there,
 because a stale domain is worse than none: search engines get told the real
