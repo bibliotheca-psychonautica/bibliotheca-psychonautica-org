@@ -73,6 +73,9 @@ JS_MAP = {
     "'Strasse: '": "'Street: '",
     "'Telefon: '": "'Phone: '",
     "'Webseite: '": "'Website: '",
+    "'Wird gesendet …'": "'Sending …'",
+    "'Danke! Deine Nachricht ist angekommen. Wir melden uns bald.'": "'Thank you! Your message has arrived. We will be in touch soon.'",
+    "'Das hat leider nicht geklappt. Bitte schreib uns direkt an info@bibliotheca-psychonautica.org.'": "'Sorry, that did not work. Please email us directly at info@bibliotheca-psychonautica.org.'",
 }
 
 SKIP_TAGS = {"style", "script"}

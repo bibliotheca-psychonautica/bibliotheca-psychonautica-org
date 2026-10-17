@@ -129,15 +129,17 @@ img{height:auto}
     </div>
 
     <div>
-      <form id="mitmachen" style="background:#FBF8F2;border:1px solid #DED3BC;padding:clamp(24px,3vw,38px)" onsubmit="sendContactMessage(event)">
+      <form id="mitmachen" style="position:relative;background:#FBF8F2;border:1px solid #DED3BC;padding:clamp(24px,3vw,38px)" onsubmit="sendContactMessage(event)">
         <h2 style="margin:0 0 8px;font-family:Spectral,Georgia,serif;font-weight:500;font-size:1.6rem;color:#14231F">Formular für Mitteilungen und Anfragen</h2>
         <p style="margin:0 0 26px;font-size:13.5px;color:#6B695F">Die mit einem * gekennzeichneten Felder sind Pflichtfelder</p>
         <label style="display:block;margin-bottom:18px"><span style="display:block;font-size:13px;font-weight:500;color:#3A3C33;margin-bottom:7px">Name *</span><input type="text" name="name" required style="width:100%;padding:13px 14px;font-size:15px;color:#1A1B18;background:#FFFDF9;border:1px solid #CFC2A6;border-radius:2px" autocomplete="name"></label>
         <label style="display:block;margin-bottom:18px"><span style="display:block;font-size:13px;font-weight:500;color:#3A3C33;margin-bottom:7px">E-Mail *</span><input type="email" name="email" required style="width:100%;padding:13px 14px;font-size:15px;color:#1A1B18;background:#FFFDF9;border:1px solid #CFC2A6;border-radius:2px" autocomplete="email"></label>
         <fieldset style="margin:0 0 18px;padding:0;border:0"><legend style="display:block;font-size:13px;font-weight:500;color:#3A3C33;margin-bottom:9px">Wobei möchtest du dich einbringen?</legend><div style="display:grid;gap:8px"><label style="display:flex;gap:9px;align-items:flex-start;font-size:14.5px;line-height:1.45;color:#4C4A42"><input type="checkbox" name="interesse" value="Bücher und Sammlungen" style="margin-top:3px">Bücher und Sammlungen beitragen</label><label style="display:flex;gap:9px;align-items:flex-start;font-size:14.5px;line-height:1.45;color:#4C4A42"><input type="checkbox" name="interesse" value="Nachlässe" style="margin-top:3px">Nachlässe organisieren</label><label style="display:flex;gap:9px;align-items:flex-start;font-size:14.5px;line-height:1.45;color:#4C4A42"><input type="checkbox" name="interesse" value="Archivierung und Digitalisierung" style="margin-top:3px">Archivierung und Digitalisierung</label><label style="display:flex;gap:9px;align-items:flex-start;font-size:14.5px;line-height:1.45;color:#4C4A42"><input type="checkbox" name="interesse" value="Projektaufbau" style="margin-top:3px">Aufbau des Projekts, Recherche oder Veranstaltungen</label></div></fieldset>
         <label style="display:block"><span style="display:block;font-size:13px;font-weight:500;color:#3A3C33;margin-bottom:7px">Nachricht *</span><textarea name="nachricht" rows="7" required style="width:100%;padding:13px 14px;font-size:15px;color:#1A1B18;background:#FFFDF9;border:1px solid #CFC2A6;border-radius:2px;resize:vertical"></textarea></label>
+        <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
         <button class="hv3" type="submit" style="margin-top:24px;width:100%;background:#7B2B22;color:#FBF8F2;font-size:16px;font-weight:600;padding:17px 28px;border:none;border-radius:2px;cursor:pointer">Anfrage per E-Mail vorbereiten</button>
-        <p style="margin:14px 0 0;font-size:13px;line-height:1.65;color:#6B695F">Dein E-Mail-Programm öffnet sich mit den Angaben als Entwurf. Es wird nichts automatisch versendet.</p>
+        <p data-form-status role="status" aria-live="polite" style="margin:14px 0 0;font-size:14.5px;line-height:1.6;color:#6B695F"></p>
+        <p style="margin:10px 0 0;font-size:13px;line-height:1.65;color:#6B695F">Die Nachricht wird über den Dienst Formspree an info@bibliotheca-psychonautica.org gesendet. Mehr dazu in der <a class="hv10" href="Datenschutz.html" style="color:#7A5A17;border-bottom:1px solid #C9BCA0">Datenschutzerklärung</a>.</p>
         
       </form>
       <div style="margin-top:24px;background:#14231F;padding:clamp(24px,3vw,34px)">
@@ -220,7 +222,30 @@ img{height:auto}
       '',
       data.get('nachricht')
     ].join('\n');
-    window.location.href = 'mailto:info@bibliotheca-psychonautica.org?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    submitToFormspree(form, subject, body, data.get('email'));
+  }
+  function submitToFormspree(form, subject, body, replyTo) {
+    var status = form.querySelector('[data-form-status]');
+    var button = form.querySelector('button[type="submit"]');
+    if (form.querySelector('input[name="_gotcha"]').value) return;
+    button.disabled = true;
+    status.style.color = '#6B695F';
+    status.textContent = 'Wird gesendet …';
+    fetch('https://formspree.io/f/mwlvyygj', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ _subject: subject, _replyto: replyTo, email: replyTo, message: body })
+    }).then(function (response) {
+      if (!response.ok) throw new Error(response.status);
+      form.reset();
+      status.style.color = '#2F5D3F';
+      status.textContent = 'Danke! Deine Nachricht ist angekommen. Wir melden uns bald.';
+    }).catch(function () {
+      status.style.color = '#7B2B22';
+      status.textContent = 'Das hat leider nicht geklappt. Bitte schreib uns direkt an info@bibliotheca-psychonautica.org.';
+    }).finally(function () {
+      button.disabled = false;
+    });
   }
 </script>
 </body>
